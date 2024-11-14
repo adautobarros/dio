@@ -1,0 +1,50 @@
+{
+    "Comment": "A Hello World example demonstrating various state types of the Amazon States Language. It is composed of flow control states only, so it does not need resources to run.",
+    "StartAt": "Tem Pet?",
+    "States": {
+      "Tem Pet?": {
+        "Comment": "A Pass state passes its input to its output, without performing work. They can also generate static JSON output, or transform JSON input using filters and pass the transformed data to the next state. Pass states are useful when constructing and debugging state machines.",
+        "Type": "Pass",
+        "Result": {
+          "HasPet": true
+        },
+        "Next": "Você tem um pet?"
+      },
+      "Você tem um pet?": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.HasPet",
+            "BooleanEquals": true,
+            "Next": "Yes"
+          },
+          {
+            "Variable": "$.HasPet",
+            "BooleanEquals": false,
+            "Next": "No"
+          }
+        ],
+        "Default": "No"
+      },
+      "Yes": {
+        "Type": "Pass",
+        "Next": "Qual o nome do seu pet?"
+      },
+      "Qual o nome do seu pet?": {
+        "Type": "Pass",
+        "Next": "Exibir Nome Pet",
+        "Result": {
+          "NamePet": "Scooby"
+        }
+      },
+      "No": {
+        "Type": "Fail",
+        "Cause": "Not Hello World"
+      },
+      "Exibir Nome Pet": {
+        "Type": "Pass",
+        "End": true,
+        "InputPath": "$.NamePet"
+      }
+    }
+  }
