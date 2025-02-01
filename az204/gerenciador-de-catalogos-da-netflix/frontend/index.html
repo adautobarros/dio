@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Filmes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .gallery {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .gallery-item {
+            width: 200px;
+            cursor: pointer;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+            background-color: #fff;
+            transition: transform 0.2s;
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: auto;
+        }
+
+        .gallery-item p {
+            text-align: center;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+        }
+
+        .modal-content video {
+            width: 100%;
+            border-radius: 5px;
+        }
+
+        .close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: #fff;
+            font-size: 30px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Galeria de Filmes</h1>
+    <div class="gallery" id="gallery">
+        <!-- Itens da galeria serão preenchidos dinamicamente via JavaScript -->
+    </div>
+
+    <div id="myModal" class="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-content">
+            <video id="modalVideo" controls>
+                <source src="" type="video/mp4">
+                Seu navegador não suporta o elemento de vídeo.
+            </video>
+            <p id="modalTitle"></p>
+        </div>
+    </div>
+
+    <script>
+        // Função para buscar a lista de filmes da API getAll
+        async function fetchMovies() {
+            try {
+                const response = await fetch('http://localhost:7001/api/all'); // Substitua pela sua URL
+                const movies = await response.json();
+                populateGallery(movies);
+            } catch (error) {
+                console.error('Erro ao buscar filmes:', error);
+            }
+        }
+
+        // Função para preencher a galeria com os filmes
+        function populateGallery(movies) {
+            const gallery = document.getElementById('gallery');
+            gallery.innerHTML = ''; // Limpa a galeria antes de preencher
+
+            movies.forEach(movie => {
+                const movieItem = document.createElement('div');
+                movieItem.className = 'gallery-item';
+                movieItem.innerHTML = `
+                    <img src="${movie.thumb}" alt="${movie.title}">
+                    <p>${movie.title} (${movie.year})</p>
+                `;
+                movieItem.onclick = () => openModal(movie.id); // Passa o ID do filme para o modal
+                gallery.appendChild(movieItem);
+            });
+        }
+
+        // Função para abrir o modal e buscar detalhes do filme
+        async function openModal(movieId) {
+            try {
+                const response = await fetch(`http://localhost:7295/api/detail?id=${movieId}`); // Substitua pela sua URL
+                const movieDetail = await response.json();
+
+                const modal = document.getElementById('myModal');
+                const modalVideo = document.getElementById('modalVideo');
+                const modalTitle = document.getElementById('modalTitle');
+
+                modalVideo.src = movieDetail.video; // URL de reprodução do filme
+                modalTitle.textContent = movieDetail.title;
+                modal.style.display = 'flex';
+                modalVideo.play();
+            } catch (error) {
+                console.error('Erro ao buscar detalhes do filme:', error);
+            }
+        }
+
+        // Função para fechar o modal
+        function closeModal() {
+            const modal = document.getElementById('myModal');
+            const modalVideo = document.getElementById('modalVideo');
+
+            modal.style.display = 'none';
+            modalVideo.pause();
+            modalVideo.currentTime = 0;
+        }
+
+        // Carrega a lista de filmes ao carregar a página
+        fetchMovies();
+    </script>
+
+</body>
+
+</html>
